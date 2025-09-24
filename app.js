@@ -16,6 +16,9 @@ class PlayFinderApp {
         this.showLoadingScreen();
         
         try {
+            // Register service worker for PWA
+            await this.registerServiceWorker();
+            
             // Initialize app components
             await this.initializeAuth();
             await this.initializeLocation();
@@ -60,6 +63,32 @@ class PlayFinderApp {
     showError(message) {
         // Simple error display - can be enhanced later
         alert(message);
+    }
+    
+    async registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                console.log('✅ Service Worker registered successfully:', registration);
+                
+                // Handle updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New content is available, prompt user to refresh
+                            if (confirm('New version available! Refresh to update?')) {
+                                window.location.reload();
+                            }
+                        }
+                    });
+                });
+            } catch (error) {
+                console.warn('⚠️ Service Worker registration failed:', error);
+            }
+        } else {
+            console.warn('⚠️ Service Worker not supported');
+        }
     }
     
     async initializeAuth() {

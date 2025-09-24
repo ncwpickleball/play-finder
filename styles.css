@@ -126,6 +126,16 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    /* Mobile app-like behavior */
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Prevent zoom on input focus */
+    touch-action: manipulation;
 }
 
 /* Loading Screen */
@@ -179,8 +189,38 @@ body {
 /* App Layout */
 #app {
     min-height: 100vh;
+    min-height: 100dvh; /* Dynamic viewport height for mobile */
     display: flex;
     flex-direction: column;
+    /* Prevent overscroll */
+    overscroll-behavior: none;
+}
+
+/* Mobile viewport fixes */
+@supports (-webkit-touch-callout: none) {
+    /* iOS Safari specific fixes */
+    #app {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+    }
+    
+    .app-main {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Android Chrome specific fixes */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+    #app {
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+    
+    .app-main {
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
 }
 
 .app-content {
@@ -271,6 +311,12 @@ body {
     flex: 1;
     margin-bottom: 80px; /* Space for bottom nav */
     min-height: calc(100vh - 136px);
+    min-height: calc(100dvh - 136px); /* Dynamic viewport height */
+    /* Prevent overscroll bounce */
+    overscroll-behavior: none;
+    /* Ensure content fills screen */
+    display: flex;
+    flex-direction: column;
 }
 
 .app-section {
@@ -295,6 +341,11 @@ body {
     z-index: var(--z-fixed);
     padding: var(--space-2) 0;
     box-shadow: var(--shadow-lg);
+    /* Mobile app-like behavior */
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    /* Ensure it stays at bottom on mobile */
+    bottom: env(safe-area-inset-bottom, 0);
 }
 
 .bottom-nav-item {
