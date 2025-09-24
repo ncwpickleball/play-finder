@@ -60,6 +60,30 @@ class PlayFinderApp {
         if (appContent) appContent.style.display = 'block';
     }
     
+    showAuthScreen() {
+        const authScreens = document.getElementById('auth-screens');
+        const appContent = document.getElementById('app-content');
+        
+        if (authScreens) authScreens.style.display = 'block';
+        if (appContent) appContent.style.display = 'none';
+        
+        // Show welcome screen by default
+        this.showAuthScreenType('welcome');
+    }
+    
+    showAuthScreenType(screenType) {
+        // Hide all auth screens
+        document.querySelectorAll('.auth-screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        
+        // Show target screen
+        const targetScreen = document.getElementById(`${screenType}-screen`);
+        if (targetScreen) {
+            targetScreen.classList.add('active');
+        }
+    }
+    
     showError(message) {
         // Simple error display - can be enhanced later
         alert(message);
@@ -94,6 +118,7 @@ class PlayFinderApp {
     async initializeAuth() {
         if (!window.supabaseClient) {
             console.warn('⚠️ Supabase not available, using mock auth');
+            this.showAuthScreen();
             return;
         }
         
@@ -103,6 +128,7 @@ class PlayFinderApp {
             
             if (error) {
                 console.error('Auth session error:', error);
+                this.showAuthScreen();
                 return;
             }
             
@@ -111,16 +137,19 @@ class PlayFinderApp {
                     id: session.user.id,
                     email: session.user.email,
                     name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
-                    avatar: session.user.user_metadata?.avatar_url || null
+                    avatar: session.user.user_metadata?.avatar_url || null,
+                    profile: session.user.user_metadata?.profile || null
                 };
                 
                 console.log('✅ User authenticated:', this.currentUser.name);
                 this.updateAuthUI();
             } else {
-                console.log('ℹ️ No active session, user not authenticated');
+                console.log('ℹ️ No active session, showing auth screen');
+                this.showAuthScreen();
             }
         } catch (error) {
             console.error('Auth initialization error:', error);
+            this.showAuthScreen();
         }
     }
     
@@ -184,6 +213,9 @@ class PlayFinderApp {
         
         // Initialize profile
         this.initializeProfile();
+        
+        // Initialize authentication
+        this.initializeAuthentication();
     }
     
     initializeBottomNavigation() {
@@ -270,6 +302,95 @@ class PlayFinderApp {
                 this.logout();
             });
         }
+    }
+    
+    initializeAuthentication() {
+        // Welcome screen buttons
+        const getStartedBtn = document.getElementById('getStartedBtn');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        if (getStartedBtn) {
+            getStartedBtn.addEventListener('click', () => {
+                this.showAuthScreenType('signup');
+            });
+        }
+        
+        if (loginBtn) {
+            loginBtn.addEventListener('click', () => {
+                this.showAuthScreenType('login');
+            });
+        }
+        
+        // Back buttons
+        const backToWelcomeBtn = document.getElementById('backToWelcomeBtn');
+        const backToWelcomeFromLoginBtn = document.getElementById('backToWelcomeFromLoginBtn');
+        
+        if (backToWelcomeBtn) {
+            backToWelcomeBtn.addEventListener('click', () => {
+                this.showAuthScreenType('welcome');
+            });
+        }
+        
+        if (backToWelcomeFromLoginBtn) {
+            backToWelcomeFromLoginBtn.addEventListener('click', () => {
+                this.showAuthScreenType('welcome');
+            });
+        }
+        
+        // Switch between login and signup
+        const switchToSignupBtn = document.getElementById('switchToSignupBtn');
+        if (switchToSignupBtn) {
+            switchToSignupBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.showAuthScreenType('signup');
+            });
+        }
+        
+        // Google authentication buttons
+        const googleSignupBtn = document.getElementById('googleSignupBtn');
+        const googleLoginBtn = document.getElementById('googleLoginBtn');
+        
+        if (googleSignupBtn) {
+            googleSignupBtn.addEventListener('click', () => {
+                this.signInWithGoogle();
+            });
+        }
+        
+        if (googleLoginBtn) {
+            googleLoginBtn.addEventListener('click', () => {
+                this.signInWithGoogle();
+            });
+        }
+        
+        // Email forms
+        const emailSignupForm = document.getElementById('emailSignupForm');
+        const emailLoginForm = document.getElementById('emailLoginForm');
+        
+        if (emailSignupForm) {
+            emailSignupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleEmailSignup();
+            });
+        }
+        
+        if (emailLoginForm) {
+            emailLoginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleEmailLogin();
+            });
+        }
+        
+        // Profile setup form
+        const profileSetupForm = document.getElementById('profileSetupForm');
+        if (profileSetupForm) {
+            profileSetupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.handleProfileSetup();
+            });
+        }
+        
+        // Initialize sports selection
+        this.initializeSportsSelection();
     }
     
     showSection(sectionId) {
@@ -496,9 +617,165 @@ class PlayFinderApp {
         this.showAuthScreen();
     }
     
-    showAuthScreen() {
-        // TODO: Implement authentication screens
-        alert('Authentication screens coming soon!');
+    // Authentication Methods
+    async signInWithGoogle() {
+        if (!window.supabaseClient) {
+            this.showError('Authentication not available');
+            return;
+        }
+        
+        try {
+            const { data, error } = await window.supabaseClient.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin
+                }
+            });
+            
+            if (error) {
+                console.error('Google sign-in error:', error);
+                this.showError('Failed to sign in with Google');
+            }
+        } catch (error) {
+            console.error('Google sign-in error:', error);
+            this.showError('Failed to sign in with Google');
+        }
+    }
+    
+    async handleEmailSignup() {
+        const email = document.getElementById('signupEmail').value;
+        const password = document.getElementById('signupPassword').value;
+        
+        if (!window.supabaseClient) {
+            this.showError('Authentication not available');
+            return;
+        }
+        
+        try {
+            const { data, error } = await window.supabaseClient.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: email.split('@')[0]
+                    }
+                }
+            });
+            
+            if (error) {
+                console.error('Signup error:', error);
+                this.showError(error.message);
+            } else {
+                console.log('✅ Signup successful:', data);
+                this.showAuthScreenType('profile-setup');
+            }
+        } catch (error) {
+            console.error('Signup error:', error);
+            this.showError('Failed to create account');
+        }
+    }
+    
+    async handleEmailLogin() {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        
+        if (!window.supabaseClient) {
+            this.showError('Authentication not available');
+            return;
+        }
+        
+        try {
+            const { data, error } = await window.supabaseClient.auth.signInWithPassword({
+                email,
+                password
+            });
+            
+            if (error) {
+                console.error('Login error:', error);
+                this.showError(error.message);
+            } else {
+                console.log('✅ Login successful:', data);
+                // The auth state change will be handled by the listener
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            this.showError('Failed to log in');
+        }
+    }
+    
+    async handleProfileSetup() {
+        const firstName = document.getElementById('profileFirstName').value;
+        const lastName = document.getElementById('profileLastName').value;
+        const location = document.getElementById('profileLocation').value;
+        const selectedSports = this.getSelectedSports();
+        
+        if (!window.supabaseClient) {
+            this.showError('Authentication not available');
+            return;
+        }
+        
+        try {
+            // Update user metadata with profile information
+            const { data, error } = await window.supabaseClient.auth.updateUser({
+                data: {
+                    full_name: `${firstName} ${lastName}`,
+                    profile: {
+                        firstName,
+                        lastName,
+                        location,
+                        favoriteSports: selectedSports
+                    }
+                }
+            });
+            
+            if (error) {
+                console.error('Profile setup error:', error);
+                this.showError('Failed to save profile');
+            } else {
+                console.log('✅ Profile setup successful:', data);
+                // Refresh the app to show the main interface
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Profile setup error:', error);
+            this.showError('Failed to save profile');
+        }
+    }
+    
+    initializeSportsSelection() {
+        const sportsGrid = document.getElementById('favoriteSportsGrid');
+        if (!sportsGrid) return;
+        
+        const sports = window.CONFIG.defaults.sports;
+        const sportIcons = {
+            'pickleball': 'fas fa-table-tennis',
+            'tennis': 'fas fa-table-tennis',
+            'basketball': 'fas fa-basketball-ball',
+            'volleyball': 'fas fa-volleyball-ball',
+            'soccer': 'fas fa-futbol',
+            'football': 'fas fa-football-ball',
+            'baseball': 'fas fa-baseball-ball',
+            'hockey': 'fas fa-hockey-puck'
+        };
+        
+        sportsGrid.innerHTML = sports.map(sport => `
+            <div class="sport-option" data-sport="${sport}">
+                <i class="${sportIcons[sport] || 'fas fa-running'}"></i>
+                <span>${sport.charAt(0).toUpperCase() + sport.slice(1)}</span>
+            </div>
+        `).join('');
+        
+        // Add click handlers for sports selection
+        sportsGrid.querySelectorAll('.sport-option').forEach(option => {
+            option.addEventListener('click', () => {
+                option.classList.toggle('selected');
+            });
+        });
+    }
+    
+    getSelectedSports() {
+        const selectedOptions = document.querySelectorAll('.sport-option.selected');
+        return Array.from(selectedOptions).map(option => option.dataset.sport);
     }
     
     joinActivity(activityId) {

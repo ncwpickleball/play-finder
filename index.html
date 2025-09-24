@@ -218,7 +218,147 @@
 
         <!-- Authentication Screens -->
         <div id="auth-screens" class="auth-screens" style="display: none;">
-            <!-- Login/Signup will be handled here -->
+            <!-- Welcome Screen -->
+            <div id="welcome-screen" class="auth-screen active">
+                <div class="welcome-container">
+                    <div class="welcome-header">
+                        <div class="welcome-logo">
+                            <i class="fas fa-search-location"></i>
+                            <h1>Play Finder</h1>
+                        </div>
+                        <p class="welcome-subtitle">Find and join sports games in your area</p>
+                    </div>
+                    
+                    <div class="welcome-actions">
+                        <button class="btn btn-primary btn-large" id="getStartedBtn">
+                            Get Started
+                        </button>
+                        <button class="btn btn-outline btn-large" id="loginBtn">
+                            Log In
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Signup Screen -->
+            <div id="signup-screen" class="auth-screen">
+                <div class="auth-container">
+                    <div class="auth-header">
+                        <button class="back-btn" id="backToWelcomeBtn">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1>Create Account</h1>
+                    </div>
+                    
+                    <div class="auth-content">
+                        <div class="signup-options">
+                            <button class="btn btn-google" id="googleSignupBtn">
+                                <i class="fab fa-google"></i>
+                                Continue with Google
+                            </button>
+                            
+                            <div class="divider">
+                                <span>or</span>
+                            </div>
+                            
+                            <form class="email-signup" id="emailSignupForm">
+                                <div class="form-group">
+                                    <label for="signupEmail">Email</label>
+                                    <input type="email" id="signupEmail" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="signupPassword">Password</label>
+                                    <input type="password" id="signupPassword" required minlength="6">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-large">
+                                    Create Account
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login Screen -->
+            <div id="login-screen" class="auth-screen">
+                <div class="auth-container">
+                    <div class="auth-header">
+                        <button class="back-btn" id="backToWelcomeFromLoginBtn">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <h1>Welcome Back</h1>
+                    </div>
+                    
+                    <div class="auth-content">
+                        <div class="login-options">
+                            <button class="btn btn-google" id="googleLoginBtn">
+                                <i class="fab fa-google"></i>
+                                Continue with Google
+                            </button>
+                            
+                            <div class="divider">
+                                <span>or</span>
+                            </div>
+                            
+                            <form class="email-login" id="emailLoginForm">
+                                <div class="form-group">
+                                    <label for="loginEmail">Email</label>
+                                    <input type="email" id="loginEmail" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="loginPassword">Password</label>
+                                    <input type="password" id="loginPassword" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-large">
+                                    Log In
+                                </button>
+                            </form>
+                            
+                            <div class="auth-footer">
+                                <p>Don't have an account? <a href="#" id="switchToSignupBtn">Sign up</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Setup Screen -->
+            <div id="profile-setup-screen" class="auth-screen">
+                <div class="auth-container">
+                    <div class="auth-header">
+                        <h1>Complete Your Profile</h1>
+                        <p class="auth-subtitle">Tell us about yourself to get started</p>
+                    </div>
+                    
+                    <div class="auth-content">
+                        <form class="profile-setup" id="profileSetupForm">
+                            <div class="form-group">
+                                <label for="profileFirstName">First Name</label>
+                                <input type="text" id="profileFirstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profileLastName">Last Name</label>
+                                <input type="text" id="profileLastName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="profileLocation">Location (City, State)</label>
+                                <input type="text" id="profileLocation" placeholder="e.g., New York, NY" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Favorite Sports</label>
+                                <div class="sports-selection">
+                                    <div class="sports-grid" id="favoriteSportsGrid">
+                                        <!-- Sports will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-large">
+                                Complete Setup
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
