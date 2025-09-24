@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Play Finder - Find Your Game</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Find and join sports games in your area. Connect with players and build your sports community.">
+    <meta name="theme-color" content="#FC4C02">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Play Finder">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading-screen">
+            <div class="loading-content">
+                <div class="loading-logo">
+                    <i class="fas fa-search-location"></i>
+                    <span>Play Finder</span>
+                </div>
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+
+        <!-- Main App Content -->
+        <div id="app-content" class="app-content" style="display: none;">
+            <!-- Top Header -->
+            <header class="app-header">
+                <div class="header-content">
+                    <div class="header-left">
+                        <div class="app-logo">
+                            <i class="fas fa-search-location"></i>
+                            <span>Play Finder</span>
+                        </div>
+                    </div>
+                    <div class="header-right">
+                        <button class="header-btn" id="notificationsBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                        </button>
+                        <button class="header-btn" id="profileBtn">
+                            <i class="fas fa-user-circle"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="app-main">
+                <!-- Feed Section (Home) -->
+                <section id="feed" class="app-section active">
+                    <div class="feed-container">
+                        <!-- Feed Header -->
+                        <div class="feed-header">
+                            <div class="location-info">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span id="currentLocation">Loading...</span>
+                            </div>
+                            <button class="btn btn-outline btn-sm" id="refreshFeedBtn">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+
+                        <!-- Activities Feed -->
+                        <div class="activities-feed">
+                            <div id="activitiesList" class="activities-list">
+                                <!-- Activities will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Post Section -->
+                <section id="post" class="app-section">
+                    <div class="post-container">
+                        <div class="post-header">
+                            <h1>Post Activity</h1>
+                        </div>
+                        <div class="post-content">
+                            <div class="post-options">
+                                <div class="post-option" data-type="game">
+                                    <div class="post-icon">
+                                        <i class="fas fa-gamepad"></i>
+                                    </div>
+                                    <div class="post-text">
+                                        <h3>Post a Game</h3>
+                                        <p>Create a new game or tournament</p>
+                                    </div>
+                                </div>
+                                <div class="post-option" data-type="partner">
+                                    <div class="post-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="post-text">
+                                        <h3>Find a Partner</h3>
+                                        <p>Look for playing partners</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Search Section -->
+                <section id="search" class="app-section">
+                    <div class="search-container">
+                        <div class="search-header">
+                            <h1>Find Activities</h1>
+                        </div>
+                        <div class="search-content">
+                            <div class="search-filters">
+                                <div class="filter-group">
+                                    <label>Location</label>
+                                    <input type="text" id="searchLocation" placeholder="Enter location...">
+                                </div>
+                                <div class="filter-group">
+                                    <label>Sport</label>
+                                    <select id="searchSport">
+                                        <option value="">All Sports</option>
+                                        <option value="pickleball">Pickleball</option>
+                                        <option value="tennis">Tennis</option>
+                                        <option value="basketball">Basketball</option>
+                                        <option value="volleyball">Volleyball</option>
+                                        <option value="soccer">Soccer</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Date</label>
+                                    <select id="searchDate">
+                                        <option value="">Any Date</option>
+                                        <option value="today">Today</option>
+                                        <option value="tomorrow">Tomorrow</option>
+                                        <option value="weekend">This Weekend</option>
+                                        <option value="next-week">Next Week</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="searchResults" class="search-results">
+                                <!-- Search results will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Profile Section -->
+                <section id="profile" class="app-section">
+                    <div class="profile-container">
+                        <div class="profile-header">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="profile-info">
+                                <h2 id="profileName">Loading...</h2>
+                                <p id="profileLocation">Location</p>
+                            </div>
+                        </div>
+                        <div class="profile-content">
+                            <div class="profile-stats">
+                                <div class="stat-item">
+                                    <span class="stat-number" id="gamesPlayed">0</span>
+                                    <span class="stat-label">Games Played</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="gamesCreated">0</span>
+                                    <span class="stat-label">Games Created</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number" id="followers">0</span>
+                                    <span class="stat-label">Followers</span>
+                                </div>
+                            </div>
+                            <div class="profile-actions">
+                                <button class="btn btn-primary" id="editProfileBtn">Edit Profile</button>
+                                <button class="btn btn-outline" id="logoutBtn">Logout</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- Bottom Navigation -->
+            <nav class="bottom-nav">
+                <a href="#feed" class="bottom-nav-item active" data-section="feed">
+                    <i class="fas fa-home"></i>
+                    <span>Feed</span>
+                </a>
+                <a href="#post" class="bottom-nav-item" data-section="post">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Post</span>
+                </a>
+                <a href="#search" class="bottom-nav-item" data-section="search">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </a>
+                <a href="#profile" class="bottom-nav-item" data-section="profile">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Authentication Screens -->
+        <div id="auth-screens" class="auth-screens" style="display: none;">
+            <!-- Login/Signup will be handled here -->
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
