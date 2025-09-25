@@ -62,10 +62,14 @@ let supabaseClient = null;
 
 // Function to initialize Supabase client
 function initializeSupabase() {
+    console.log('🔍 Attempting to initialize Supabase...');
+    console.log('🔍 Supabase library available:', typeof supabase !== 'undefined');
+    
     if (typeof supabase !== 'undefined') {
         try {
             supabaseClient = supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
             console.log('✅ Supabase client initialized successfully');
+            window.supabaseClient = supabaseClient; // Update global reference
             return true;
         } catch (error) {
             console.error('❌ Failed to initialize Supabase client:', error);
@@ -77,14 +81,30 @@ function initializeSupabase() {
     }
 }
 
-// Try to initialize immediately, or wait for DOM to be ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        initializeSupabase();
-    });
-} else {
-    initializeSupabase();
+// Wait for Supabase library to load
+function waitForSupabase() {
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds max wait
+    
+    const checkSupabase = () => {
+        attempts++;
+        console.log(`🔍 Checking for Supabase library (attempt ${attempts}/${maxAttempts})`);
+        
+        if (typeof supabase !== 'undefined') {
+            console.log('✅ Supabase library found, initializing...');
+            initializeSupabase();
+        } else if (attempts < maxAttempts) {
+            setTimeout(checkSupabase, 100); // Check every 100ms
+        } else {
+            console.error('❌ Supabase library failed to load after 5 seconds');
+        }
+    };
+    
+    checkSupabase();
 }
+
+// Start checking for Supabase library
+waitForSupabase();
 
 // Export configuration
 window.CONFIG = CONFIG;

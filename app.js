@@ -122,16 +122,19 @@ class PlayFinderApp {
     }
     
     async initializeAuth() {
-        // Wait a bit for Supabase to initialize
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Wait longer for Supabase to initialize
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Try to initialize Supabase if not already done
         if (!window.supabaseClient && window.initializeSupabase) {
+            console.log('🔍 Attempting to initialize Supabase from app...');
             window.initializeSupabase();
+            // Wait a bit more after initialization attempt
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
         
         if (!window.supabaseClient) {
-            console.warn('⚠️ Supabase not available, showing auth screen');
+            console.warn('⚠️ Supabase not available after waiting, showing auth screen');
             this.showAuthScreen();
             return;
         }
@@ -405,6 +408,39 @@ class PlayFinderApp {
         
         // Initialize sports selection
         this.initializeSportsSelection();
+        
+        // Test Supabase connection button
+        const testSupabaseBtn = document.getElementById('testSupabaseBtn');
+        if (testSupabaseBtn) {
+            testSupabaseBtn.addEventListener('click', () => {
+                this.testSupabaseConnection();
+            });
+        }
+    }
+    
+    testSupabaseConnection() {
+        console.log('🔍 Testing Supabase connection...');
+        console.log('🔍 Supabase library available:', typeof supabase !== 'undefined');
+        console.log('🔍 Supabase client available:', !!window.supabaseClient);
+        console.log('🔍 Config available:', !!window.CONFIG);
+        
+        if (window.supabaseClient) {
+            alert('✅ Supabase connection is working!');
+        } else if (typeof supabase !== 'undefined') {
+            alert('⚠️ Supabase library loaded but client not initialized. Trying to fix...');
+            if (window.initializeSupabase) {
+                window.initializeSupabase();
+                setTimeout(() => {
+                    if (window.supabaseClient) {
+                        alert('✅ Supabase connection fixed!');
+                    } else {
+                        alert('❌ Still having issues. Check console for details.');
+                    }
+                }, 1000);
+            }
+        } else {
+            alert('❌ Supabase library not loaded. Check your internet connection.');
+        }
     }
     
     showSection(sectionId) {
