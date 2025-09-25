@@ -60,18 +60,33 @@ const CONFIG = {
 // Initialize Supabase client
 let supabaseClient = null;
 
-// Check if Supabase is available and initialize
-if (typeof supabase !== 'undefined') {
-    try {
-        supabaseClient = supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
-        console.log('✅ Supabase client initialized successfully');
-    } catch (error) {
-        console.error('❌ Failed to initialize Supabase client:', error);
+// Function to initialize Supabase client
+function initializeSupabase() {
+    if (typeof supabase !== 'undefined') {
+        try {
+            supabaseClient = supabase.createClient(CONFIG.supabase.url, CONFIG.supabase.anonKey);
+            console.log('✅ Supabase client initialized successfully');
+            return true;
+        } catch (error) {
+            console.error('❌ Failed to initialize Supabase client:', error);
+            return false;
+        }
+    } else {
+        console.warn('⚠️ Supabase library not loaded. Make sure to include the Supabase CDN script.');
+        return false;
     }
+}
+
+// Try to initialize immediately, or wait for DOM to be ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        initializeSupabase();
+    });
 } else {
-    console.warn('⚠️ Supabase library not loaded. Make sure to include the Supabase CDN script.');
+    initializeSupabase();
 }
 
 // Export configuration
 window.CONFIG = CONFIG;
 window.supabaseClient = supabaseClient;
+window.initializeSupabase = initializeSupabase;

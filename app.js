@@ -27,7 +27,13 @@ class PlayFinderApp {
             
             // Hide loading screen and show app
             this.hideLoadingScreen();
-            this.showApp();
+            
+            // If no user is authenticated, show auth screen instead of main app
+            if (!this.currentUser) {
+                this.showAuthScreen();
+            } else {
+                this.showApp();
+            }
             
             console.log('✅ Play Finder V2 initialized successfully');
         } catch (error) {
@@ -116,8 +122,16 @@ class PlayFinderApp {
     }
     
     async initializeAuth() {
+        // Wait a bit for Supabase to initialize
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Try to initialize Supabase if not already done
+        if (!window.supabaseClient && window.initializeSupabase) {
+            window.initializeSupabase();
+        }
+        
         if (!window.supabaseClient) {
-            console.warn('⚠️ Supabase not available, using mock auth');
+            console.warn('⚠️ Supabase not available, showing auth screen');
             this.showAuthScreen();
             return;
         }
