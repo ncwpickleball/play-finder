@@ -164,6 +164,34 @@ class PlayFinderApp {
         }
         
         try {
+            // Set up auth state change listener
+            window.supabaseClient.auth.onAuthStateChange((event, session) => {
+                console.log('🔍 Auth state changed:', event, session?.user?.email);
+                
+                if (event === 'SIGNED_IN' && session?.user) {
+                    this.currentUser = {
+                        id: session.user.id,
+                        email: session.user.email,
+                        name: session.user.user_metadata?.full_name || session.user.email.split('@')[0],
+                        avatar: session.user.user_metadata?.avatar_url || null,
+                        profile: session.user.user_metadata?.profile || null
+                    };
+                    
+                    // Check if user needs to complete profile
+                    if (!this.currentUser.profile || !this.currentUser.profile.firstName) {
+                        console.log('🔍 User needs to complete profile setup');
+                        this.showAuthScreenType('profile-setup');
+                    } else {
+                        console.log('✅ User profile complete, showing main app');
+                        this.updateAuthUI();
+                        this.showApp();
+                    }
+                } else if (event === 'SIGNED_OUT') {
+                    this.currentUser = null;
+                    this.showAuthScreen();
+                }
+            });
+            
             // Check for existing session
             const { data: { session }, error } = await window.supabaseClient.auth.getSession();
             
@@ -183,7 +211,16 @@ class PlayFinderApp {
                 };
                 
                 console.log('✅ User authenticated:', this.currentUser.name);
-                this.updateAuthUI();
+                console.log('🔍 User profile data:', this.currentUser.profile);
+                
+                // Check if user has completed profile setup
+                if (!this.currentUser.profile || !this.currentUser.profile.firstName) {
+                    console.log('🔍 User needs to complete profile setup');
+                    this.showAuthScreenType('profile-setup');
+                } else {
+                    console.log('✅ User profile complete, showing main app');
+                    this.updateAuthUI();
+                }
             } else {
                 console.log('ℹ️ No active session, showing auth screen');
                 this.showAuthScreen();
