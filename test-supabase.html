@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supabase Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔍 Supabase Connection Test</h1>
+        
+        <div id="test-results">
+            <div class="test-result info">Running tests...</div>
+        </div>
+        
+        <h3>Test Authentication</h3>
+        <input type="email" id="testEmail" placeholder="Enter test email" value="test@example.com">
+        <input type="password" id="testPassword" placeholder="Enter test password" value="password123">
+        <button onclick="testSignup()">Test Signup</button>
+        <button onclick="testLogin()">Test Login</button>
+        
+        <h3>Debug Info</h3>
+        <div id="debug-info"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://obheutzptzbdrtnamezx.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iaGV1dHpwdHpiZHJ0bmFtZXp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc5NzY0NDYsImV4cCI6MjA3MzU1MjQ0Nn0.ga_DKiG7j6u7rSiQQ_j_VvvPsxOb56rfs1m_Zs4numE';
+        
+        let supabaseClient = null;
+        
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        function addDebugInfo(info) {
+            const debug = document.getElementById('debug-info');
+            debug.innerHTML += `<div><strong>${info.label}:</strong> ${info.value}</div>`;
+        }
+        
+        async function runTests() {
+            addResult('🔍 Testing Supabase connection...', 'info');
+            
+            // Test 1: Check if Supabase library loaded
+            if (typeof supabase === 'undefined') {
+                addResult('❌ Supabase library not loaded', 'error');
+                return;
+            }
+            addResult('✅ Supabase library loaded', 'success');
+            
+            // Test 2: Try to create client
+            try {
+                supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                addResult('✅ Supabase client created', 'success');
+            } catch (error) {
+                addResult(`❌ Failed to create Supabase client: ${error.message}`, 'error');
+                return;
+            }
+            
+            // Test 3: Try to get session
+            try {
+                const { data, error } = await supabaseClient.auth.getSession();
+                if (error) {
+                    addResult(`⚠️ Session check error: ${error.message}`, 'error');
+                } else {
+                    addResult('✅ Session check successful', 'success');
+                }
+            } catch (error) {
+                addResult(`❌ Session check failed: ${error.message}`, 'error');
+            }
+            
+            // Add debug info
+            addDebugInfo({ label: 'Supabase URL', value: SUPABASE_URL });
+            addDebugInfo({ label: 'Anon Key', value: SUPABASE_ANON_KEY.substring(0, 20) + '...' });
+            addDebugInfo({ label: 'Client Created', value: supabaseClient ? 'Yes' : 'No' });
+        }
+        
+        async function testSignup() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            
+            if (!supabaseClient) {
+                addResult('❌ Supabase client not available', 'error');
+                return;
+            }
+            
+            addResult(`🔍 Testing signup with ${email}...`, 'info');
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signUp({
+                    email,
+                    password
+                });
+                
+                if (error) {
+                    addResult(`❌ Signup failed: ${error.message}`, 'error');
+                } else {
+                    addResult(`✅ Signup successful! User ID: ${data.user?.id}`, 'success');
+                    if (data.user && !data.user.email_confirmed_at) {
+                        addResult('📧 Please check your email for confirmation link', 'info');
+                    }
+                }
+            } catch (error) {
+                addResult(`❌ Signup error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testLogin() {
+            const email = document.getElementById('testEmail').value;
+            const password = document.getElementById('testPassword').value;
+            
+            if (!supabaseClient) {
+                addResult('❌ Supabase client not available', 'error');
+                return;
+            }
+            
+            addResult(`🔍 Testing login with ${email}...`, 'info');
+            
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email,
+                    password
+                });
+                
+                if (error) {
+                    addResult(`❌ Login failed: ${error.message}`, 'error');
+                } else {
+                    addResult(`✅ Login successful! User: ${data.user?.email}`, 'success');
+                }
+            } catch (error) {
+                addResult(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Run tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>
