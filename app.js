@@ -697,10 +697,26 @@ class PlayFinderApp {
         const password = document.getElementById('signupPassword').value;
         
         console.log('🔍 Attempting signup with:', { email, password: '***' });
+        console.log('🔍 Supabase library available:', typeof supabase !== 'undefined');
+        console.log('🔍 Supabase client available:', !!window.supabaseClient);
         
         if (!window.supabaseClient) {
             console.error('❌ Supabase client not available');
-            this.showError('Authentication not available. Please refresh the page.');
+            
+            // Try to initialize Supabase one more time
+            if (typeof supabase !== 'undefined' && window.initializeSupabase) {
+                console.log('🔍 Attempting to initialize Supabase...');
+                window.initializeSupabase();
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                if (window.supabaseClient) {
+                    console.log('✅ Supabase initialized successfully, retrying signup...');
+                    // Retry the signup
+                    return this.handleEmailSignup();
+                }
+            }
+            
+            this.showError('Authentication not available. Please refresh the page and try again.');
             return;
         }
         
