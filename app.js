@@ -95,6 +95,38 @@ class PlayFinderApp {
         alert(message);
     }
     
+    async waitForSupabase() {
+        console.log('🔍 Waiting for Supabase to initialize...');
+        
+        // Wait up to 10 seconds for Supabase to be available
+        for (let i = 0; i < 100; i++) {
+            if (window.supabaseClient) {
+                console.log('✅ Supabase client found');
+                return;
+            }
+            
+            // Try to initialize if library is available but client isn't
+            if (typeof supabase !== 'undefined' && !window.supabaseClient) {
+                console.log('🔍 Supabase library found, creating client...');
+                try {
+                    window.supabaseClient = supabase.createClient(
+                        window.CONFIG.supabase.url, 
+                        window.CONFIG.supabase.anonKey
+                    );
+                    console.log('✅ Supabase client created successfully');
+                    return;
+                } catch (error) {
+                    console.error('❌ Failed to create Supabase client:', error);
+                }
+            }
+            
+            // Wait 100ms before next check
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        console.warn('⚠️ Supabase not available after 10 seconds');
+    }
+    
     async registerServiceWorker() {
         if ('serviceWorker' in navigator) {
             try {
@@ -122,16 +154,8 @@ class PlayFinderApp {
     }
     
     async initializeAuth() {
-        // Wait longer for Supabase to initialize
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Try to initialize Supabase if not already done
-        if (!window.supabaseClient && window.initializeSupabase) {
-            console.log('🔍 Attempting to initialize Supabase from app...');
-            window.initializeSupabase();
-            // Wait a bit more after initialization attempt
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
+        // Wait for Supabase library to load
+        await this.waitForSupabase();
         
         if (!window.supabaseClient) {
             console.warn('⚠️ Supabase not available after waiting, showing auth screen');
