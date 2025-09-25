@@ -660,12 +660,16 @@ class PlayFinderApp {
         const email = document.getElementById('signupEmail').value;
         const password = document.getElementById('signupPassword').value;
         
+        console.log('🔍 Attempting signup with:', { email, password: '***' });
+        
         if (!window.supabaseClient) {
-            this.showError('Authentication not available');
+            console.error('❌ Supabase client not available');
+            this.showError('Authentication not available. Please refresh the page.');
             return;
         }
         
         try {
+            console.log('🔍 Calling Supabase signUp...');
             const { data, error } = await window.supabaseClient.auth.signUp({
                 email,
                 password,
@@ -676,16 +680,22 @@ class PlayFinderApp {
                 }
             });
             
+            console.log('🔍 Supabase response:', { data, error });
+            
             if (error) {
-                console.error('Signup error:', error);
-                this.showError(error.message);
+                console.error('❌ Signup error:', error);
+                this.showError(`Signup failed: ${error.message}`);
             } else {
                 console.log('✅ Signup successful:', data);
-                this.showAuthScreenType('profile-setup');
+                if (data.user && !data.user.email_confirmed_at) {
+                    this.showError('Please check your email and click the confirmation link to complete signup.');
+                } else {
+                    this.showAuthScreenType('profile-setup');
+                }
             }
         } catch (error) {
-            console.error('Signup error:', error);
-            this.showError('Failed to create account');
+            console.error('❌ Signup error:', error);
+            this.showError(`Failed to create account: ${error.message}`);
         }
     }
     
@@ -693,27 +703,42 @@ class PlayFinderApp {
         const email = document.getElementById('loginEmail').value;
         const password = document.getElementById('loginPassword').value;
         
+        console.log('🔍 Attempting login with:', { email, password: '***' });
+        
         if (!window.supabaseClient) {
-            this.showError('Authentication not available');
+            console.error('❌ Supabase client not available');
+            this.showError('Authentication not available. Please refresh the page.');
             return;
         }
         
         try {
+            console.log('🔍 Calling Supabase signInWithPassword...');
             const { data, error } = await window.supabaseClient.auth.signInWithPassword({
                 email,
                 password
             });
             
+            console.log('🔍 Supabase login response:', { data, error });
+            
             if (error) {
-                console.error('Login error:', error);
-                this.showError(error.message);
+                console.error('❌ Login error:', error);
+                this.showError(`Login failed: ${error.message}`);
             } else {
                 console.log('✅ Login successful:', data);
-                // The auth state change will be handled by the listener
+                // Update current user and show app
+                this.currentUser = {
+                    id: data.user.id,
+                    email: data.user.email,
+                    name: data.user.user_metadata?.full_name || data.user.email.split('@')[0],
+                    avatar: data.user.user_metadata?.avatar_url || null,
+                    profile: data.user.user_metadata?.profile || null
+                };
+                this.updateAuthUI();
+                this.showApp();
             }
         } catch (error) {
-            console.error('Login error:', error);
-            this.showError('Failed to log in');
+            console.error('❌ Login error:', error);
+            this.showError(`Failed to log in: ${error.message}`);
         }
     }
     
@@ -723,12 +748,16 @@ class PlayFinderApp {
         const location = document.getElementById('profileLocation').value;
         const selectedSports = this.getSelectedSports();
         
+        console.log('🔍 Profile setup data:', { firstName, lastName, location, selectedSports });
+        
         if (!window.supabaseClient) {
-            this.showError('Authentication not available');
+            console.error('❌ Supabase client not available');
+            this.showError('Authentication not available. Please refresh the page.');
             return;
         }
         
         try {
+            console.log('🔍 Calling Supabase updateUser...');
             // Update user metadata with profile information
             const { data, error } = await window.supabaseClient.auth.updateUser({
                 data: {
@@ -742,17 +771,27 @@ class PlayFinderApp {
                 }
             });
             
+            console.log('🔍 Supabase updateUser response:', { data, error });
+            
             if (error) {
-                console.error('Profile setup error:', error);
-                this.showError('Failed to save profile');
+                console.error('❌ Profile setup error:', error);
+                this.showError(`Failed to save profile: ${error.message}`);
             } else {
                 console.log('✅ Profile setup successful:', data);
-                // Refresh the app to show the main interface
-                window.location.reload();
+                // Update current user and show app
+                this.currentUser = {
+                    id: data.user.id,
+                    email: data.user.email,
+                    name: data.user.user_metadata?.full_name || data.user.email.split('@')[0],
+                    avatar: data.user.user_metadata?.avatar_url || null,
+                    profile: data.user.user_metadata?.profile || null
+                };
+                this.updateAuthUI();
+                this.showApp();
             }
         } catch (error) {
-            console.error('Profile setup error:', error);
-            this.showError('Failed to save profile');
+            console.error('❌ Profile setup error:', error);
+            this.showError(`Failed to save profile: ${error.message}`);
         }
     }
     
